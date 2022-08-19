@@ -298,4 +298,15 @@ class TestStaticFiles {
         assertThat(multiLocationStaticResourceApp.attribute<String>("testlogs").split("Static file handler added").size - 1).isEqualTo(4)
     }
 
+    @Test
+    fun `a request to a static file with no extension should attempt to find one with dot html`() = TestUtil.test(defaultStaticResourceApp) { _, http ->
+        assertThat(http.get("/html.html").httpCode()).isEqualTo(OK)
+        assertThat(http.get("/html").httpCode()).isEqualTo(OK)
+        assertThat(http.get("/styles").httpCode()).isEqualTo(NOT_FOUND)
+        assertThat(http.get("/styles.css").httpCode()).isEqualTo(OK)
+        assertThat(http.get("/html.html").headers.getFirst(Header.CONTENT_TYPE)).contains(ContentType.HTML)
+        assertThat(http.getBody("/html.html")).contains("HTML works")
+        assertThat(http.getBody("/html")).contains("HTML works")
+    }
+
 }
