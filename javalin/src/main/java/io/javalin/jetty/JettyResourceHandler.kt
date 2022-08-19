@@ -38,7 +38,10 @@ class JettyResourceHandler : JavalinResourceHandler {
         val baseRequest = httpRequest.getAttribute("jetty-request") as Request
         handlers.filter { !it.config.skipFileFunction(httpRequest) }.forEach { handler ->
             try {
-                val resource = handler.getResource(target)
+                var resource: Resource = handler.getResource(target)
+                if(!resource.exists() && !target.contains(".")) {
+                    resource = handler.getResource("$target.html") //try the resource now with a .html added
+                }
                 if (resource.isFile() || resource.isDirectoryWithWelcomeFile(handler, target)) {
                     handler.config.headers.forEach { httpResponse.setHeader(it.key, it.value) }
                     if (handler.config.precompress && JettyPrecompressingResourceHandler.handle(resource, httpRequest, httpResponse)) {
